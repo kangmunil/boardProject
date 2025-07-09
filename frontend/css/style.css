@@ -1,0 +1,60 @@
+/* RESET */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,Helvetica,sans-serif;line-height:1.5;color:#222;background:#fafafa}
+
+/* ── NAVBAR ────────────────────────── */
+.navbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 6%;background:#fff;border-bottom:1px solid #ddd
+}
+.logo a{font-size:1.5rem;font-weight:700;text-decoration:none;color:#0074d9}
+.nav-links a{margin:0 14px;text-decoration:none;color:#333;font-weight:500}
+.auth a{text-decoration:none;margin-left:16px}
+.btn-primary{padding:6px 14px;border-radius:6px;background:#0074d9;color:#fff;font-weight:600}
+
+/* ── HERO ──────────────────────────── */
+.hero{
+  text-align:center;padding:60px 20px;background:#e6f2ff
+}
+.hero h1{font-size:2.4rem;margin-bottom:14px;font-weight:700}
+.hero p{font-size:1.1rem;margin-bottom:24px}
+.hero-btn{font-size:1.1rem}
+
+/* ── MAIN CONTAINER ─────────────────── */
+.container{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:40px;max-width:1280px;margin:60px auto;padding:0 6%;
+}
+
+/* 게시판 프리뷰 */
+.board-preview h2{margin-bottom:18px}
+.board-list{list-style:none}
+.board-list li{margin-bottom:14px;font-size:1rem;display:flex;justify-content:space-between}
+.board-list a{text-decoration:none;color:#0074d9}
+.board-list span{color:#666;font-size:0.85rem}
+
+/* 블로그 카드 */
+.blog-preview h2{margin-bottom:18px}
+.blog-card{
+  border:1px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:24px;
+  background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.05)
+}
+.blog-card img{width:100%;display:block}
+.card-info{padding:16px}
+.card-info h3{font-size:1.05rem;margin-bottom:6px;color:#111}
+.date{font-size:0.85rem;color:#666}
+.more-link{display:inline-block;margin-top:10px;text-decoration:none;color:#0074d9}
+
+/* ── FOOTER ────────────────────────── */
+.footer{
+  text-align:center;padding:30px 0;margin-top:80px;border-top:1px solid #ddd;background:#fff
+}
+.sns a{margin:0 8px;text-decoration:none;font-size:0.9rem;color:#0074d9}
+
+/* ── RESPONSIVE ─────────────────────── */
+@media(max-width:900px){
+  .container{grid-template-columns:1fr}
+  .blog-preview{order:-1}   /* 모바일에서 블로그를 위로 */
+}

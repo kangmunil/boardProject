@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyService | 메인</title>
+  <link rel="stylesheet" href="/frontend/css/style.css" />
+</head>
+<body>
+  <!-- ── NAV ─────────────────────────────── -->
+  <header class="navbar">
+    <div class="logo"><a href="/">MyService</a></div>
+
+    <nav class="nav-links">
+      <a href="/board">게시판</a>
+      <a href="/blog">블로그</a>
+      <a href="/about">소개</a>
+    </nav>
+
+    <div class="auth">
+      <a href="/login">로그인</a>
+      <a href="/signup" class="btn-primary">회원가입</a>
+    </div>
+  </header>
+
+  <!-- ── HERO ─────────────────────────────── -->
+  <section class="hero">
+    <h1>블로그 글 작성</h1>
+    <p>게시판<br />블로그</p>
+    <a href="/signup" class="btn-primary hero-btn">지금 시작하기</a>
+  </section>
+
+  <!-- ── MAIN CONTENT ─────────────────────── -->
+  <main class="container">
+    <!-- 게시판 프리뷰 -->
+    <section class="board-preview">
+      <h2>📌 최신 게시글</h2>
+      <ul class="board-list">
+        <li><a href="/board/1">{{ posts.title }}</a><span>{{ 5분전 }}</span></li>
+        <li><a href="/board/2">{{ posts.title }}</a><span>{{ 10분전 }}</span></li>
+        <li><a href="/board/3">{{ posts.title }}</a><span>{{ 3시간 전 }}</span></li>
+        <li><a href="/board/list">➜ 더 보기</a></li>
+      </ul>
+    </section>
+
+    <!-- 블로그 프리뷰 -->
+    <section class="blog-preview">
+      <h2>📝 최신 블로그</h2>
+
+      <article class="blog-card">
+        <a href="/blog/45">
+          <img src="https://picsum.photos/400/220?random=1" alt="thumbnail" />
+          <div class="card-info">
+            <h3>{{ posts.title }}</h3>
+            <p class="date">2025-07-08</p>
+          </div>
+        </a>
+      </article>
+
+      <article class="blog-card">
+        <a href="/blog/44">
+          <img src="https://picsum.photos/400/220?random=2" alt="thumbnail" />
+          <div class="card-info">
+            <h3>{{ posts.title }}</h3>
+            <p class="date">2025-07-06</p>
+          </div>
+        </a>
+      </article>
+
+      <a href="/blog" class="more-link">➜ 블로그 모두 보기</a>
+    </section>
+  </main>
+
+  <!-- ── FOOTER ───────────────────────────── -->
+  <footer class="footer">
+    <p>© 2025 MyService. All rights reserved.</p>
+    <div class="sns">
+      <a href="#">Twitter</a>
+      <a href="#">Instagram</a>
+      <a href="#">Github</a>
+    </div>
+  </footer>
+</body>
+</html>

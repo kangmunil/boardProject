@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Write Blog | MyService</title>
+
+  <!-- 공통 스타일시트 -->
+  <link rel="stylesheet" href="/frontend/css/style.css" />
+
+  <!-- 블로그 작성 전용 추가 스타일 -->
+  <style>
+    .blog-wrapper   {max-width:860px;margin:60px auto;padding:0 6%}
+    .blog-header    {margin-bottom:28px}
+    .blog-header h2 {font-size:1.8rem}
+
+    form.blog-form  {display:flex;flex-direction:column;gap:18px}
+    .blog-form label{font-weight:600;font-size:0.95rem}
+    .blog-form input[type="text"],
+    .blog-form input[type="file"],
+    .blog-form textarea,
+    .blog-form select{
+      width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;font-size:1rem
+    }
+    .blog-form textarea{height:280px;resize:vertical}
+    .btn-submit     {align-self:flex-end;padding:8px 22px;background:#0074d9;border:none;
+                     border-radius:6px;color:#fff;font-size:1rem;font-weight:600;cursor:pointer}
+    .btn-submit:hover{background:#005db8}
+  </style>
+</head>
+<body>
+  <!-- ── NAVBAR ─────────────────────────── -->
+  <header class="navbar">
+    <div class="logo"><a href="/">MyService</a></div>
+
+    <nav class="nav-links">
+      <a href="/board">게시판</a>
+      <a href="/blog" aria-current="page">블로그</a>
+      <a href="/about">소개</a>
+    </nav>
+
+    <div class="auth">
+      <a href="/login">로그인</a>
+      <a href="/signup" class="btn-primary">회원가입</a>
+    </div>
+  </header>
+
+  <!-- ── BLOG WRITE FORM ────────────────── -->
+  <main class="blog-wrapper">
+    <div class="blog-header">
+      <h2>📝 새 블로그 글 작성</h2>
+    </div>
+
+    <form class="blog-form" action="/blog/write" method="POST" enctype="multipart/form-data">
+      <!-- 제목 -->
+      <div>
+        <label for="title">제목</label>
+        <input type="text" id="title" name="title" placeholder="제목을 입력하세요" required />
+      </div>
+
+      <!-- 카테고리 -->
+      <div>
+        <label for="category">카테고리</label>
+        <select id="category" name="category" required>
+          <option value="">-- 선택 --</option>
+          <option value="tech">Tech</option>
+          <option value="design">Design</option>
+          <option value="life">Life</option>
+          <option value="notice">Notice</option>
+        </select>
+      </div>
+
+      <!-- 썸네일 이미지 -->
+      <div>
+        <label for="thumbnail">썸네일 이미지</label>
+        <input type="file" id="thumbnail" name="thumbnail" accept="image/*" />
+      </div>
+
+      <!-- 본문 -->
+      <div>
+        <label for="content">본문 (Markdown 지원)</label>
+        <textarea id="content" name="content" placeholder="내용을 입력하세요" required></textarea>
+      </div>
+
+      <!-- 제출 버튼 -->
+      <button type="submit" class="btn-submit">발행하기</button>
+    </form>
+  </main>
+
+  <!-- ── FOOTER ─────────────────────────── -->
+  <footer class="footer">
+    <p>© 2025 MyService. All rights reserved.</p>
+  </footer>
+</body>
+</html>

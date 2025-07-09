@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notice Board</title>
+
+  <!-- 메인 스타일시트 재사용 -->
+  <link rel="stylesheet" href="/frontend/css/style.css" />
+
+  <!-- 게시판 전용 보조 스타일 -->
+  <style>
+    .board-wrapper{max-width:1000px;margin:60px auto;padding:0 6%}
+    .board-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .board-header h2{font-size:1.6rem}
+    .board-header .btn-write{padding:6px 14px;border-radius:6px;background:#0074d9;color:#fff;text-decoration:none;font-weight:600}
+    .board-search{margin-bottom:20px;text-align:right}
+    .board-search input{padding:6px 10px;width:240px;border:1px solid #ccc;border-radius:4px}
+    table.board{width:100%;border-collapse:collapse}
+    table.board th,table.board td{padding:12px;border-bottom:1px solid #e1e1e1;text-align:center;font-size:0.95rem}
+    table.board th{background:#f5f5f5}
+    table.board td.title{text-align:left}
+    table.board tr:hover{background:#fafafa}
+    @media(max-width:600px){
+      .board-header{flex-direction:column;align-items:flex-start;gap:10px}
+      .board-search{text-align:left}
+      table.board th:nth-child(3),
+      table.board td:nth-child(3){display:none}   /* 모바일에서 조회수 숨김 */
+    }
+  </style>
+</head>
+<body>
+  <!-- 상단 내비게이션 -->
+  <header class="navbar">
+    <div class="logo"><a href="/">MyService</a></div>
+
+    <nav class="nav-links">
+      <a href="/board" aria-current="page">게시판</a>
+      <a href="/blog">블로그</a>
+      <a href="/about">소개</a>
+    </nav>
+
+    <div class="auth">
+      <a href="/login">로그인</a>
+      <a href="/signup" class="btn-primary">회원가입</a>
+    </div>
+  </header>
+
+  <!-- 게시판 본문 -->
+  <main class="board-wrapper">
+    <div class="board-header">
+      <h2>📌 공지·자유 게시판</h2>
+      <a href="/board/write" class="btn-write">글쓰기</a>
+    </div>
+
+    <!-- 검색 창 -->
+    <div class="board-search">
+      <form action="/board/search" method="GET">
+        <input type="text" name="q" placeholder="검색어를 입력하세요" />
+      </form>
+    </div>
+
+    <!-- 게시글 목록 -->
+    <table class="board">
+      <thead>
+        <tr>
+          <th style="width:8%">번호</th>
+          <th>제목</th>
+          <th style="width:15%">작성자</th>
+          <th style="width:15%">작성일</th>
+          <th style="width:10%">조회수</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 예시 더미 데이터 -->
+        <tr>
+          <td>123</td>
+          <td class="title"><a href="/board/123">[공지] 서비스 이용 가이드</a></td>
+          <td>관리자</td>
+          <td>2025-07-09</td>
+          <td>512</td>
+        </tr>
+        <tr>
+          <td>122</td>
+          <td class="title"><a href="/board/122">초보자를 위한 FAQ 모음</a></td>
+          <td>info_bot</td>
+          <td>2025-07-08</td>
+          <td>302</td>
+        </tr>
+        <tr>
+          <td>121</td>
+          <td class="title"><a href="/board/121">오늘의 질문: CSS Flexbox 이해하기</a></td>
+          <td>dev_kim</td>
+          <td>2025-07-08</td>
+          <td>198</td>
+        </tr>
+        <!-- 실제 사용 시 서버에서 <tr> 반복 렌더링 -->
+      </tbody>
+    </table>
+  </main>
+
+  <!-- 푸터 -->
+  <footer class="footer">
+    <p>© 2025 MyService. All rights reserved.</p>
+  </footer>
+</body>
+</html>
