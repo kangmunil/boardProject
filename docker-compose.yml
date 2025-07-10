@@ -4,7 +4,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./fronted:/usr/share/nginx/html
+      - ./frontend:/usr/share/nginx/html
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - api_gateway
@@ -15,7 +15,7 @@ services:
     volumes:
       - ./gateway/app:/app
     ports:
-      - "8000:8000"
+      - "8000:8001"
     environment:
       - USER_SERVICE_URL=http://user_service:8001
     depends_on:
@@ -30,7 +30,7 @@ services:
     volumes:
       - ./services/user_service/app:/app
     ports:
-      - "8080:8000"
+      - "8080:8001"
       # docker compose에서도 8000을 보내는데 8080:->8000 뒤에 들어온다.  
     environment:
       - DATABASE_URL=mysql+asyncmy://${DB_USER}:${DB_PASSWORD}@user_db:3306/user_db
@@ -65,6 +65,11 @@ services:
   
   redis_db:
     image: redis:alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
     networks:
       - webnet
 networks:

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+    <link rel="stylesheet" href="/frontend/css/style.css" />
+    <style>
+        .container{
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- ── NAV ─────────────────────────────── -->
+  <header class="navbar">
+    <div class="logo"><a href="/">MyService</a></div>
+
+    <nav class="nav-links">
+      <a href="/board">게시판</a>
+      <a href="/blog">블로그</a>
+      <a href="/about">소개</a>
+    </nav>
+
+    <div class="auth">
+      <a href="/login">로그인</a>
+      <a href="/signup" class="btn-primary">회원가입</a>
+    </div>
+  </header>
+
+     <div class="container">
+        <div class="auth-form">
+          <h2>로그인</h2> 
+          <form action="/login" method="post"> 
+          <!-- 아이디 --> 
+          <label for="userid">아이디:</label><br> 
+          <input type="text" id="userid" name="userid" required><br><br> 
+          
+          <!-- 비밀번호 --> <label for="password">비밀번호:</label><br> 
+          <input type="password" id="password" name="password" required><br><br> 
+          <!-- 제출 버튼 --> <input type="submit" value="로그인"> 
+          </form>
+        </div>
+      </div>
+
+</body>
+</html>

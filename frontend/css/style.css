@@ -58,3 +58,64 @@ body{font-family:'Segoe UI',Arial,Helvetica,sans-serif;line-height:1.5;color:#22
   .container{grid-template-columns:1fr}
   .blog-preview{order:-1}   /* 모바일에서 블로그를 위로 */
 }
+
+/* ── AUTH FORMS (Login & Register) ─────────────────── */
+.auth-form {
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  text-align: left;
+}
+
+.auth-form h2 {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.auth-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="password"],
+.auth-form input[type="email"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.auth-form input[type="checkbox"] {
+  margin-right: 6px;
+}
+
+.gender-options {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* 옵션 사이의 간격 */
+  margin-bottom: 16px;
+}
+
+.gender-options label {
+  font-weight: normal; /* 기본 label 스타일 덮어쓰기 */
+  margin-bottom: 0;
+}
+
+.auth-form input[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background: #0074d9;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
