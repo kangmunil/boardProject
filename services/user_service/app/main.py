@@ -1,5 +1,5 @@
-from fastapi import FastAPI, status, Response, Depends, HTTPException
-from typing import Annotated
+from fastapi import FastAPI, status, Response, Depends, HTTPException, Form, Cookie
+from typing import Annotated, Optional
 from starlette.staticfiles import StaticFiles
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -7,11 +7,12 @@ from sqlmodel import select
 from redis_client import get_redis
 from redis.asyncio import Redis
 import os
+import math
 #operating system
 
-from models import User, UserCreate, UserPublic
+from models import User, UserCreate, UserPublic, Userlogin
 from database import init_db, get_session
-from auth import get_password_hash, create_session
+from auth import get_password_hash, create_session, verify_password, get_user_id_from_session, delete_session
 
 app=FastAPI(title="User Service")
 
@@ -22,8 +23,9 @@ os.makedirs(PROFILE_IMAGE_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 def create_user_public(user: User) -> UserPublic:
-    image_url = f"/static/profiles/{user.profile_image_filename}" if user.profile_image_filename else "https://www.w3schoool.com/w3images/avater_g.jpg"
-    user_dict = user.mdoel_dump()
+    image_url = f"/static/profiles/{user.profile_image_frame}" if user.profile_image_frame else "https://www.w3schoool.com/w3images/avater_g.jpg"
+    user_dict = user.model_dump()
+    user_dict["profile_image_filename"] = user.profile_image_frame
     user_dict["profile_image_url"] = image_url
     return UserPublic.model_validate(user_dict)
 
@@ -59,3 +61,84 @@ async def register_user(
     response.set_cookie(key="session_id", value=session_id, httponly=True, samesite="lax", max_age=3600, path="/")
 
     return create_user_public(new_user)
+
+@app.post("/api/auth/login", status_code=status.HTTP_200_OK)
+async def login(
+    response: Response,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    redis: Annotated[Redis, Depends(get_redis)],
+    email: str = Form(...),
+    password: str = Form(...),
+):
+    statement = select(User).where(User.email == email)
+    user_result = await session.exec(statement)
+    user = user_result.one_or_none()
+
+    if not user or not verify_password(password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="이메일 또는 비밀번호가 잘못되었습니다.",
+        )
+
+    session_id = await create_session(redis, user.id)
+    response.set_cookie(
+        key="session_id",
+        value=session_id,
+        httponly=True,
+        samesite="lax",
+        max_age=3600,
+        path="/",
+    )
+
+    return {"message": "로그인 성공"}
+
+@app.get("/api/auth/me", response_model=UserPublic)
+async def get_current_user(
+    response: Response,
+    redis: Annotated[Redis, Depends(get_redis)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    session_id: Annotated[Optional[str], Cookie()] = None
+):
+    if not session_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    
+    user_id = await get_user_id_from_session(redis, session_id)
+
+    # 쿠키의 세션이 사라지게 한다
+    if not user_id:
+        response.delete_cookie("session_id", path="/")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found session")
+    
+    user = await session.get(User, int(user_id))
+    
+    if not user:
+        response.delete_cookie("session_id", path="/")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    return create_user_public(user)
+
+@app.post("/api/auth/logout")
+async def logout(
+    response: Response,
+    redis: Annotated[Redis, Depends(get_redis)],
+    session_id: Annotated[Optional[str], Cookie()] = None
+):
+    if session_id:
+        await delete_session(redis, session_id)
+    response.delete_cookie("session_id", path="/")
+    return {"message":"LOGOUT 성공"}
+
+@app.get("/api/users", response_model=list[UserPublic])
+async def get_all_users(session: Annotated[AsyncSession, Depends(get_session)]):
+    statement = select(User)
+    users = await session.exec(statement)
+    return [create_user_public(user) for user in users.all()]
+
+@app.get("/api/users/{user_id}", response_model=UserPublic)
+async def get_user_by_id(
+    user_id: int,
+    session: Annotated[AsyncSession, Depends(get_session)]
+):
+    user = await session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return create_user_public(user)

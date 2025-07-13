@@ -5,8 +5,12 @@ body{font-family:'Segoe UI',Arial,Helvetica,sans-serif;line-height:1.5;color:#22
 /* ── NAVBAR ────────────────────────── */
 .navbar{
   position:sticky;top:0;z-index:100;
-  display:flex;justify-content:space-between;align-items:center;
+  display:flex;justify-content:center; /* 가운데 정렬 */
   padding:14px 6%;background:#fff;border-bottom:1px solid #ddd
+}
+.navbar-content {
+  display:flex;justify-content:space-between;align-items:center;
+  width:100%;max-width:1280px; /* 최대 너비 설정 */
 }
 .logo a{font-size:1.5rem;font-weight:700;text-decoration:none;color:#0074d9}
 .nav-links a{margin:0 14px;text-decoration:none;color:#333;font-weight:500}
@@ -26,6 +30,18 @@ body{font-family:'Segoe UI',Arial,Helvetica,sans-serif;line-height:1.5;color:#22
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:40px;max-width:1280px;margin:60px auto;padding:0 6%;
+}
+
+/* 사용자 목록 페이지 컨테이너 */
+.user-list-page-container {
+  max-width: 800px; /* 사용자 목록에 적합한 최대 너비 */
+  margin: 60px auto; /* 가운데 정렬 및 상하 여백 */
+  padding: 0 6%;
+}
+
+.user-list-page-container h1 {
+  text-align: center;
+  margin-bottom: 30px;
 }
 
 /* 게시판 프리뷰 */
@@ -50,6 +66,12 @@ body{font-family:'Segoe UI',Arial,Helvetica,sans-serif;line-height:1.5;color:#22
 /* ── FOOTER ────────────────────────── */
 .footer{
   text-align:center;padding:30px 0;margin-top:80px;border-top:1px solid #ddd;background:#fff
+}
+.sns-links {
+  display: flex;
+  justify-content: center;
+  gap: 16px; /* 링크 사이 간격 */
+  margin-top: 10px;
 }
 .sns a{margin:0 8px;text-decoration:none;font-size:0.9rem;color:#0074d9}
 
@@ -119,3 +141,91 @@ body{font-family:'Segoe UI',Arial,Helvetica,sans-serif;line-height:1.5;color:#22
   font-size: 1rem;
   cursor: pointer;
 }
+
+
+/* style.css */
+
+.user-list {
+    width: 100%;
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0;
+    border-collapse: collapse;
+    list-style: none;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.user-list-header,
+.user-list-item {
+    display: grid;
+    grid-template-columns: 1fr 2fr 3fr 2fr;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.user-list-header {
+    background: #f7fafd;
+    font-weight: 700;
+    color: #2563eb;
+    font-size: 1.06em;
+}
+
+.user-list-item:last-child {
+    border-bottom: none;
+}
+
+.user-list-item {
+    font-size: 1em;
+    transition: background 0.2s;
+}
+.user-list-item:hover {
+    background: #f2f6fb;
+}
+
+.user-id, .user-name, .user-email, .user-actions {
+    padding: 0 4px;
+    word-break: break-all;
+}
+
+.user-name a {
+    color: #1d4ed8;
+    text-decoration: none;
+    font-weight: 500;
+}
+.user-name a:hover {
+    text-decoration: underline;
+}
+
+.user-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.edit-btn, .delete-btn {
+    padding: 5px 14px;
+    border: none;
+    border-radius: 7px;
+    font-size: 0.98em;
+    cursor: pointer;
+    background: #e0e7ff;
+    color: #312e81;
+    transition: background 0.18s;
+}
+.edit-btn:hover {
+    background: #a5b4fc;
+    color: #222;
+}
+.delete-btn {
+    background: #fee2e2;
+    color: #be123c;
+}
+.delete-btn:hover {
+    background: #fca5a5;
+    color: #b91c1c;
+}
+
+

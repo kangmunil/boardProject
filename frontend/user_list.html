@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>사용자 목록</title>
+  <link rel="stylesheet" href="/frontend/css/style.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="navbar-content">
+      <div class="logo"><a href="/">MyService</a></div>
+
+      <nav class="nav-links">
+        <a href="/board">게시판</a>
+        <a href="/blog">블로그</a>
+        <a href="/about">소개</a>
+      </nav>
+
+      <div class="auth" id="auth-links">
+        <a href="/login.html">로그인</a>
+        <a href="/register.html" class="btn-primary">회원가입</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="user-list-page-container">
+    <h1>사용자 목록</h1><br>
+        <ul class="user-list">
+            <!-- 헤더 -->
+            <li class="user-list-header">
+                <span class="user-id">아이디</span>
+                <span class="user-name">이름</span>
+                <span class="user-email">이메일</span>
+                <span class="user-actions">수정/삭제</span>
+            </li>
+            {% if users %}
+                {% for user in users %}
+            <li class="user-list-item">
+                <span class="user-id">{{ user.id }}</span>
+                <span class="user-name">
+                    <a href="/users/{{ user.id }}">{{ user.username }}</a>
+                </span>
+                <span class="user-email">{{ user.email }}</span>
+                <span class="user-actions">
+                    <button class="edit-btn" data-user-id="{{ user.id }}">회원수정</button>
+                    <button class="delete-btn" data-user-id="{{ user.id }}">회원삭제</button>
+                </span>
+            </li>
+                {% endfor %}
+            {% endif %}
+        </ul>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 MyService. All rights reserved.</p>
+    <div class="sns sns-links">
+      <a href="#">Twitter</a>
+      <a href="#">Instagram</a>
+      <a href="#">Github</a>
+    </div>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/user_list.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', renderNavbar);
+  </script>
+</body>
+</html>

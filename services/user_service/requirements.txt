@@ -5,5 +5,7 @@ sqlalchemy[asyncio]
 asyncmy
 python-dotenv
 redis
-passlib[bcrypt]
-cryptography
+passlib==1.7.4
+cryptography==42.0.8
+python-multipart
+pycryptodome

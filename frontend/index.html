@@ -17,9 +17,9 @@
       <a href="/about">소개</a>
     </nav>
 
-    <div class="auth">
-      <a href="/login">로그인</a>
-      <a href="/signup" class="btn-primary">회원가입</a>
+    <div class="auth" id="auth-links">
+      <a href="/login.html">로그인</a>
+      <a href="/register.html" class="btn-primary">회원가입</a>
     </div>
   </header>
 
@@ -27,7 +27,7 @@
   <section class="hero">
     <h1>블로그 글 작성</h1>
     <p>게시판<br />블로그</p>
-    <a href="/signup" class="btn-primary hero-btn">지금 시작하기</a>
+    <a href="/register.html" class="btn-primary hero-btn">지금 시작하기</a>
   </section>
 
   <!-- ── MAIN CONTENT ─────────────────────── -->
@@ -80,5 +80,9 @@
       <a href="#">Github</a>
     </div>
   </footer>
+<script src="/js/auth.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', renderNavbar);
+</script>
 </body>
 </html>
