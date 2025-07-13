@@ -7,7 +7,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             const users = await response.json();
             users.forEach(user => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `ID: ${user.id}, Username: ${user.username}, Email: ${user.email}`;
+                listItem.className = 'user-list-item'; // CSS 클래스 추가
+                listItem.innerHTML = `
+                    <span class="user-id">${user.id}</span>
+                    <span class="user-name"><a href="/users/${user.id}">${user.username}</a></span>
+                    <span class="user-email">${user.email}</span>
+                    <span class="user-bio">${user.bio || ''}</span> <!-- bio 추가 -->
+                    <span class="user-actions">
+                        <button class="edit-btn" data-user-id="${user.id}">회원수정</button>
+                        <button class="delete-btn" data-user-id="${user.id}">회원삭제</button>
+                    </span>
+                `;
                 userListElement.appendChild(listItem);
             });
         } else {

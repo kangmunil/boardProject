@@ -6,6 +6,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 from redis_client import get_redis
 from redis.asyncio import Redis
+from schemas import UserList  # pydantic 모델: 공개해도 되는 필드만
 import os
 import math
 #operating system
@@ -89,7 +90,6 @@ async def login(
         max_age=3600,
         path="/",
     )
-
     return {"message": "로그인 성공"}
 
 @app.get("/api/auth/me", response_model=UserPublic)
@@ -142,3 +142,9 @@ async def get_user_by_id(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return create_user_public(user)
+
+@app.get("/user/list", response_model=list[UserList])
+async def get_user_list(session: Annotated[AsyncSession, Depends(get_session)]):
+    result = await session.execute(select(User).order_by(User.id))
+    users = result.scalars().all()
+    return [UserList(id=user.id, username=user.username, email=user.email) for user in users]

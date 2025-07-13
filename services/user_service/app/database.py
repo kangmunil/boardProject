@@ -16,4 +16,4 @@ async def init_db():
 
 async def get_session():
     async with AsyncSession(engine) as session:
-        yield session
+        yield session # 중간에 결과를 잠깐 내보내고, 함수가 끝날 때까지 대기

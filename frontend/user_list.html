@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>사용자 목록</title>
-  <link rel="stylesheet" href="/frontend/css/style.css" />
+  <link rel="stylesheet" href="/assets/css/style.css" />
+  <!--<link rel="stylesheet" href="/frontend/css/style.css" />  -->
 </head>
 <body>
   <header class="navbar">
@@ -26,29 +27,16 @@
 
   <main class="user-list-page-container">
     <h1>사용자 목록</h1><br>
-        <ul class="user-list">
+        <ul class="user-list" id="user-list">
             <!-- 헤더 -->
             <li class="user-list-header">
                 <span class="user-id">아이디</span>
                 <span class="user-name">이름</span>
                 <span class="user-email">이메일</span>
+                <span class="user-bio">소개</span>
                 <span class="user-actions">수정/삭제</span>
             </li>
-            {% if users %}
-                {% for user in users %}
-            <li class="user-list-item">
-                <span class="user-id">{{ user.id }}</span>
-                <span class="user-name">
-                    <a href="/users/{{ user.id }}">{{ user.username }}</a>
-                </span>
-                <span class="user-email">{{ user.email }}</span>
-                <span class="user-actions">
-                    <button class="edit-btn" data-user-id="{{ user.id }}">회원수정</button>
-                    <button class="delete-btn" data-user-id="{{ user.id }}">회원삭제</button>
-                </span>
-            </li>
-                {% endfor %}
-            {% endif %}
+            <!-- user_list.js가 여기에 사용자 목록을 동적으로 추가합니다. -->
         </ul>
   </main>
 
@@ -61,8 +49,8 @@
     </div>
   </footer>
 
-  <script src="/js/auth.js"></script>
-  <script src="/js/user_list.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/user_list.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', renderNavbar);
   </script>
