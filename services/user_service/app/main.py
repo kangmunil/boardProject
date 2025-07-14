@@ -93,7 +93,7 @@ async def register_user(
             async with aiofiles.open(file_path, 'wb') as out_file:
                 while content := await file.read(1024):
                     await out_file.write(content)
-            new_user.profile_image_url = f"/static/profiles/{unique_filename}"
+            new_user.profile_image_url = f"/static/profile_images/{unique_filename}"
             print(f"[DEBUG] Image saved to: {file_path}")
             print(f"[DEBUG] New user profile_image_url set to: {new_user.profile_image_url}")
         except Exception as e:
@@ -138,7 +138,6 @@ async def login(
     )
     return {"message": "로그인 성공"}
 
-@app.get("/api/users/me", response_model=UserPublic)
 @app.get("/api/auth/me", response_model=UserPublic)
 async def get_current_user(
     response: Response,
@@ -200,23 +199,28 @@ async def get_user_list(session: Annotated[AsyncSession, Depends(get_session)]):
 async def update_my_profile(
     user_data: UserUpdate,
     session: Annotated[AsyncSession, Depends(get_session)],
-    user_id : Annotated[int, Header(alias="X-User_ID")]
+    user_id: Annotated[int, Header(alias="X-User-Id")],
 ):
+    """로그인된 사용자의 프로필(이메일, 자기소개) 수정"""
     db_user = await session.get(User, user_id)
     if not db_user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="사용자가 없습니다.")
+        raise HTTPException(status_code=status.HTTP_404, detail="User not found")
+
+    # 제공된 데이터만 업데이트
     update_data = user_data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_user, key, value)
+    
     session.add(db_user)
     await session.commit()
     await session.refresh(db_user)
     return create_user_public(db_user)
 
+
 @app.post("/api/users/me/upload_image", response_model=UserPublic)
 async def upload_my_profile_image(
     session: Annotated[AsyncSession, Depends(get_session)],
-    user_id: Annotated[int, Header(alias="X-User_ID")],
+    user_id: Annotated[int, Header(alias="X-User-Id")],
     file: UploadFile
 ):
     print(f"[DEBUG] Uploading image for user_id: {user_id}")
@@ -225,6 +229,17 @@ async def upload_my_profile_image(
     if not db_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="사용자가 없습니다.")
     
+    # 기존 프로필 이미지 삭제
+    if db_user.profile_image_url and not db_user.profile_image_url.startswith("http"):
+        old_filename = os.path.basename(db_user.profile_image_url)
+        old_file_path = os.path.join(PROFILE_IMAGE_DIR, old_filename)
+        if os.path.exists(old_file_path):
+            try:
+                os.remove(old_file_path)
+                print(f"[DEBUG] Deleted old profile image: {old_file_path}")
+            except Exception as e:
+                print(f"[ERROR] Failed to delete old profile image {old_file_path}: {e}")
+
     file_extension = os.path.splitext(file.filename)[1]
     unique_filename = f"{uuid.uuid4()}{file_extension}"
     file_path = os.path.join(PROFILE_IMAGE_DIR, unique_filename)
@@ -238,7 +253,7 @@ async def upload_my_profile_image(
         print(f"[ERROR] Failed to save file: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"파일 저장 실패: {e}")
 
-    db_user.profile_image_url = f"/static/profiles/{unique_filename}"
+    db_user.profile_image_url = f"/static/profile_images/{unique_filename}"
     session.add(db_user)
     await session.commit()
     await session.refresh(db_user)

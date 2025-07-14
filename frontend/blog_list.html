@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>블로그 게시물 목록</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+    <style>
+        .container {
+            display: flex;
+        }
+        .blog-list-container {
+            max-width: 960px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .blog-post-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+        .blog-post-item:last-child {
+            border-bottom: none;
+        }
+        .blog-post-item h3 a {
+            color: #333;
+            text-decoration: none;
+            font-size: 1.5em;
+        }
+        .blog-post-item h3 a:hover {
+            text-decoration: underline;
+        }
+        .blog-post-meta {
+            font-size: 0.9em;
+            color: #777;
+            margin-top: 5px;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .pagination button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .pagination button.active {
+            background-color: #0056b3;
+        }
+        .write-post-button-container {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- ── NAV ─────────────────────────────── -->
+    <header class="navbar">
+        <div class="logo"><a href="/">MyService</a></div>
+        <nav class="nav-links">
+            <a href="/board">게시판</a>
+            <a href="/blog">블로그</a>
+            <a href="/about">소개</a>
+        </nav>
+        <div class="auth" id="auth-links">
+            <a href="/login">로그인</a>
+            <a href="/register" class="btn-primary">회원가입</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="blog-list-container">
+            <h2>블로그 게시물</h2>
+            <div class="write-post-button-container" id="write-post-container" style="display: none;">
+                <a href="/blog_posts.html" class="btn-primary">글쓰기</a>
+            </div>
+            <div id="blog-posts-list">
+                <!-- 블로그 게시물이 여기에 로드됩니다 -->
+            </div>
+            <div class="pagination" id="pagination-controls">
+                <!-- 페이징 버튼이 여기에 로드됩니다 -->
+            </div>
+            <p id="error-message" style="color: red;"></p>
+        </div>
+    </div>
+
+    <script src="/assets/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', renderNavbar);
+
+        const blogPostsList = document.getElementById('blog-posts-list');
+        const paginationControls = document.getElementById('pagination-controls');
+        const writePostContainer = document.getElementById('write-post-container');
+        const errorMessageElement = document.getElementById('error-message');
+
+        let currentPage = 1;
+        const pageSize = 20;
+
+        async function fetchBlogPosts(page) {
+            try {
+                errorMessageElement.textContent = '';
+                const response = await fetch(`${API_URL}/blog/posts?page=${page}&size=${pageSize}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || '블로그 게시물을 불러오는데 실패했습니다.');
+                }
+                const posts = await response.json();
+                
+                blogPostsList.innerHTML = ''; // 기존 목록 지우기
+                if (posts.length === 0) {
+                    blogPostsList.innerHTML = '<p>게시물이 없습니다.</p>';
+                    paginationControls.innerHTML = '';
+                    return;
+                }
+
+                posts.forEach(post => {
+                    const postElement = document.createElement('div');
+                    postElement.classList.add('blog-post-item');
+                    postElement.innerHTML = `
+                        <h3><a href="/blog.html?id=${post.id}">${post.title}</a></h3>
+                        <p class="blog-post-meta">작성자 ID: ${post.owner_id} | 작성일: ${new Date(post.create_at).toLocaleString()}</p>
+                        <p>${post.content.substring(0, 150)}...</p>
+                    `;
+                    blogPostsList.appendChild(postElement);
+                });
+
+                // 페이징 컨트롤 렌더링 (총 게시물 수를 알 수 없으므로, 일단 다음/이전 버튼만 구현)
+                // 실제 구현에서는 백엔드에서 total_pages 또는 total_count를 받아와야 합니다.
+                paginationControls.innerHTML = `
+                    <button onclick="prevPage()" ${currentPage === 1 ? 'disabled' : ''}>이전</button>
+                    <span>페이지 ${currentPage}</span>
+                    <button onclick="nextPage()" ${posts.length < pageSize ? 'disabled' : ''}>다음</button>
+                `;
+
+            } catch (error) {
+                errorMessageElement.textContent = error.message;
+                console.error('Error fetching blog posts:', error);
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                fetchBlogPosts(currentPage);
+            }
+        }
+
+        function nextPage() {
+            currentPage++;
+            fetchBlogPosts(currentPage);
+        }
+
+        // 로그인 상태에 따라 글쓰기 버튼 표시
+        async function checkLoginStatusForWriteButton() {
+            const user = await getCurrentUser(); // auth.js의 함수 사용
+            if (user) {
+                writePostContainer.style.display = 'block';
+            } else {
+                writePostContainer.style.display = 'none';
+            }
+        }
+
+        // 페이지 로드 시 게시물 가져오기 및 로그인 상태 확인
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchBlogPosts(currentPage);
+            checkLoginStatusForWriteButton();
+        });
+
+    </script>
+</body>
+</html>

@@ -100,7 +100,7 @@
 
                 <div class="form-group">
                     <label for="birthday">생일</label>
-                    <input type="date" id="birthday" name="birthday" />
+                    <input type="text" id="birthday" name="birthday" maxlength="6" placeholder="예: 900101" />
                 </div>
 
                 <div class="form-group">
@@ -151,7 +151,7 @@
         // 초기 사용자 정보 채우기
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const res = await fetch(`${API_URL}/users/me`, { method: 'GET', credentials: 'include' });
+                const res = await fetch(`${API_URL}/auth/me`, { method: 'GET', credentials: 'include' });
                 if (!res.ok) throw new Error((await res.json()).detail || '사용자 정보를 가져오지 못했습니다.');
 
                 user = await res.json(); // 전역 user 변수에 할당
@@ -177,7 +177,7 @@
             saveBtn.disabled = true;
 
             if (!user || !user.id) {
-                errorEl.textContent = '사용자 정보를 불러오지 못했습니다. 다시 시도해주세요.';
+                errorEl.textContent = '사용자 정보를 불러오지 못했습니다. 페이지를 새로고침 후 다시 시도해주세요.';
                 saveBtn.disabled = false;
                 return;
             }
@@ -190,8 +190,8 @@
                 // 텍스트 데이터만 JSON으로 변환
                 const updateData = {};
                 for (let [key, value] of formData.entries()) {
-                    if (key !== 'username' && key !== 'profile-image') { // username과 profile-image는 제외
-                        updateData[key] = value === '' ? null : value; // 빈 문자열을 null로 변환
+                    if (key !== 'username' && key !== 'profile-image' && value !== '') { // username, profile-image, 빈 값 제외
+                        updateData[key] = value;
                     }
                 }
 
@@ -200,7 +200,7 @@
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-User_ID': user.id // X-User_ID 헤더 추가
+                        'X-User-Id': user.id
                     },
                     credentials: 'include',
                     body: JSON.stringify(updateData)
@@ -227,6 +227,9 @@
                     const imageRes = await fetch(`${API_URL}/users/me/upload_image`, {
                         method: 'POST',
                         credentials: 'include',
+                        headers: {
+                            'X-User-ID': user.id
+                        },
                         body: imageFormData
                     });
 
@@ -238,6 +241,7 @@
                 }
 
                 successEl.textContent = '프로필이 성공적으로 수정되었습니다!';
+                window.location.href = '/profile_view.html'; // 프로필 보기 페이지로 리다이렉트
             } catch (err) {
                 errorEl.textContent = err.message;
                 console.error('프로필 저장 오류:', err);

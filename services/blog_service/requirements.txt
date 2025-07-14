@@ -9,4 +9,4 @@ passlib==1.7.4
 cryptography==42.0.0
 python-multipart
 aiofiles
-python-multipart
+httpx

@@ -1,95 +1,113 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Write Blog | MyService</title>
-
-  <!-- 공통 스타일시트 -->
-  <link rel="stylesheet" href="/assets/css/style.css" />
-
-  <!-- 블로그 작성 전용 추가 스타일 -->
-  <style>
-    .blog-wrapper   {max-width:860px;margin:60px auto;padding:0 6%}
-    .blog-header    {margin-bottom:28px}
-    .blog-header h2 {font-size:1.8rem}
-
-    form.blog-form  {display:flex;flex-direction:column;gap:18px}
-    .blog-form label{font-weight:600;font-size:0.95rem}
-    .blog-form input[type="text"],
-    .blog-form input[type="file"],
-    .blog-form textarea,
-    .blog-form select{
-      width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;font-size:1rem
-    }
-    .blog-form textarea{height:280px;resize:vertical}
-    .btn-submit     {align-self:flex-end;padding:8px 22px;background:#0074d9;border:none;
-                     border-radius:6px;color:#fff;font-size:1rem;font-weight:600;cursor:pointer}
-    .btn-submit:hover{background:#005db8}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>블로그 게시물</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+    <style>
+        .container {
+            display: flex;
+        }
+        .blog-post-detail-container {
+            max-width: 960px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .blog-post-detail-container h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .blog-post-meta {
+            font-size: 0.9em;
+            color: #777;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .blog-post-content {
+            line-height: 1.6;
+            color: #555;
+        }
+        #error-message {
+            color: red;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-  <!-- ── NAVBAR ─────────────────────────── -->
-  <header class="navbar">
-    <div class="logo"><a href="/">MyService</a></div>
+    <!-- ── NAV ─────────────────────────────── -->
+    <header class="navbar">
+        <div class="logo"><a href="/">MyService</a></div>
+        <nav class="nav-links">
+            <a href="/board">게시판</a>
+            <a href="/blog_list.html">블로그</a>
+            <a href="/about">소개</a>
+        </nav>
+        <div class="auth" id="auth-links">
+            <a href="/login">로그인</a>
+            <a href="/register" class="btn-primary">회원가입</a>
+        </div>
+    </header>
 
-    <nav class="nav-links">
-      <a href="/board">게시판</a>
-      <a href="/blog" aria-current="page">블로그</a>
-      <a href="/about">소개</a>
-    </nav>
-
-    <div class="auth">
-      <a href="/login">로그인</a>
-      <a href="/signup" class="btn-primary">회원가입</a>
+    <div class="container">
+        <div class="blog-post-detail-container">
+            <h2 id="post-title"></h2>
+            <p class="blog-post-meta">
+                작성자 ID: <span id="post-owner"></span> | 
+                작성일: <span id="post-date"></span> | 
+                태그: <span id="post-tags"></span>
+            </p>
+            <div id="post-content" class="blog-post-content">
+                <!-- 게시물 내용이 여기에 로드됩니다 -->
+            </div>
+            <p id="error-message"></p>
+        </div>
     </div>
-  </header>
 
-  <!-- ── BLOG WRITE FORM ────────────────── -->
-  <main class="blog-wrapper">
-    <div class="blog-header">
-      <h2>📝 새 블로그 글 작성</h2>
-    </div>
+    <script src="/assets/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', renderNavbar);
 
-    <form class="blog-form" action="/blog/write" method="POST" enctype="multipart/form-data">
-      <!-- 제목 -->
-      <div>
-        <label for="title">제목</label>
-        <input type="text" id="title" name="title" placeholder="제목을 입력하세요" required />
-      </div>
+        const postTitle = document.getElementById('post-title');
+        const postOwner = document.getElementById('post-owner');
+        const postDate = document.getElementById('post-date');
+        const postTags = document.getElementById('post-tags');
+        const postContent = document.getElementById('post-content');
+        const errorMessageElement = document.getElementById('error-message');
 
-      <!-- 카테고리 -->
-      <div>
-        <label for="category">카테고리</label>
-        <select id="category" name="category" required>
-          <option value="">-- 선택 --</option>
-          <option value="tech">Tech</option>
-          <option value="design">Design</option>
-          <option value="life">Life</option>
-          <option value="notice">Notice</option>
-        </select>
-      </div>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('id');
 
-      <!-- 썸네일 이미지 -->
-      <div>
-        <label for="thumbnail">썸네일 이미지</label>
-        <input type="file" id="thumbnail" name="thumbnail" accept="image/*" />
-      </div>
+            if (!postId) {
+                errorMessageElement.textContent = '게시물 ID가 제공되지 않았습니다.';
+                return;
+            }
 
-      <!-- 본문 -->
-      <div>
-        <label for="content">본문 (Markdown 지원)</label>
-        <textarea id="content" name="content" placeholder="내용을 입력하세요" required></textarea>
-      </div>
+            try {
+                const response = await fetch(`${API_URL}/blog/posts/${postId}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || '게시물을 불러오는데 실패했습니다.');
+                }
+                const post = await response.json();
 
-      <!-- 제출 버튼 -->
-      <button type="submit" class="btn-submit">발행하기</button>
-    </form>
-  </main>
+                postTitle.textContent = post.title;
+                postOwner.textContent = post.owner_id;
+                postDate.textContent = new Date(post.create_at).toLocaleString();
+                postTags.textContent = post.tags || '없음';
+                postContent.innerHTML = post.content.replace(/\n/g, '<br>'); // 줄바꿈 처리
 
-  <!-- ── FOOTER ─────────────────────────── -->
-  <footer class="footer">
-    <p>© 2025 MyService. All rights reserved.</p>
-  </footer>
+            } catch (error) {
+                errorMessageElement.textContent = error.message;
+                console.error('Error fetching blog post:', error);
+            }
+        });
+    </script>
 </body>
 </html>

@@ -20,7 +20,7 @@ services:
       - "8000:8001"
     environment:
       - USER_SERVICE_URL=http://user_service:8001
-      - BLOG_SERVICE_URL=http://user_service:8002
+      - BLOG_SERVICE_URL=http://blog_service:8002
     depends_on:
       user_service:
         condition: service_started

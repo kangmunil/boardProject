@@ -71,8 +71,9 @@
         document.addEventListener('DOMContentLoaded', renderNavbar);
 
         document.addEventListener('DOMContentLoaded', async () => {
+            const errorMessageElement = document.getElementById('error-message');
             try {
-                const response = await fetch(`${API_URL}/users/me`, {
+                const response = await fetch(`${API_URL}/auth/me`, {
                     method: 'GET',
                     credentials: 'include'
                 });
