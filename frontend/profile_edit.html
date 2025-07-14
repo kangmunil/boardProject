@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>프로필 수정</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+    <style>
+        .profile-edit-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 24px 32px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: #fff;
+        }
+        .profile-edit-container h2 {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 10px 0;
+            border-radius: 6px;
+            background: #0074d9;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.05rem;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        #error-message, #success-message {
+            margin-top: 12px;
+            text-align: center;
+            font-weight: 600;
+        }
+        #error-message { color: #e74c3c; }
+        #success-message { color: #2ecc71; }
+    </style>
+</head>
+<body>
+    <!-- ── NAV ────────────────────────────── -->
+    <header class="navbar">
+        <div class="logo"><a href="/">MyService</a></div>
+        <nav class="nav-links">
+            <a href="/board">게시판</a>
+            <a href="/blog">블로그</a>
+            <a href="/about">소개</a>
+        </nav>
+        <div class="auth" id="auth-links">
+            <!-- auth.js 가 로그인/로그아웃 링크를 교체 -->
+        </div>
+    </header>
+
+    <!-- ── PROFILE EDIT FORM ───────────────── -->
+    <div class="container" style="display: flex;">
+        <div class="profile-edit-container">
+            <h2>프로필 수정</h2>
+            <form id="profile-form">
+                <div class="form-group">
+                    <label for="username">아이디 (수정 불가)</label>
+                    <input type="text" id="username" name="username" disabled />
+                </div>
+
+                <div class="form-group">
+                    <label for="email">이메일</label>
+                    <input type="email" id="email" name="email" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="name">이름</label>
+                    <input type="text" id="name" name="name" />
+                </div>
+
+                <div class="form-group">
+                    <label for="birthday">생일</label>
+                    <input type="date" id="birthday" name="birthday" />
+                </div>
+
+                <div class="form-group">
+                    <label for="gender">성별</label>
+                    <select id="gender" name="gender">
+                        <option value="">선택 안 함</option>
+                        <option value="male">남성</option>
+                        <option value="female">여성</option>
+                        <option value="other">기타</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">전화번호</label>
+                    <input type="tel" id="phone" name="phone" placeholder="010-1234-5678" />
+                </div>
+
+                <div class="form-group">
+                    <label for="bio">자기소개</label>
+                    <textarea id="bio" name="bio"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-image">프로필 사진</label>
+                    <input type="file" id="profile-image" name="profile-image" accept="image/*" />
+                </div>
+
+                <button type="submit" class="btn-primary" id="save-btn">저장</button>
+            </form>
+            <p id="error-message"></p>
+            <p id="success-message"></p>
+        </div>
+    </div>
+
+    <script src="/assets/js/auth.js"></script>
+    <script>
+        // 공통 네비바 렌더링
+        document.addEventListener('DOMContentLoaded', renderNavbar);
+
+        // 폼 요소 캐싱
+        const form          = document.getElementById('profile-form');
+        const saveBtn       = document.getElementById('save-btn');
+        saveBtn.disabled = true; // 초기에는 버튼 비활성화
+        const errorEl       = document.getElementById('error-message');
+        const successEl     = document.getElementById('success-message');
+        let user; // user 변수를 전역으로 선언
+
+        // 초기 사용자 정보 채우기
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch(`${API_URL}/users/me`, { method: 'GET', credentials: 'include' });
+                if (!res.ok) throw new Error((await res.json()).detail || '사용자 정보를 가져오지 못했습니다.');
+
+                user = await res.json(); // 전역 user 변수에 할당
+                document.getElementById('username').value  = user.username || '';
+                document.getElementById('email').value     = user.email    || '';
+                document.getElementById('name').value      = user.name     || '';
+                document.getElementById('birthday').value  = user.birthday || '';
+                document.getElementById('gender').value    = user.gender   || '';
+                document.getElementById('phone').value     = user.phone    || '';
+                document.getElementById('bio').value       = user.bio      || '';
+                saveBtn.disabled = false; // 사용자 정보 로드 후 버튼 활성화
+            } catch (err) {
+                errorEl.textContent = err.message;
+                console.error('사용자 정보 로드 오류:', err);
+            }
+        });
+
+        // 프로필 저장
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorEl.textContent = '';
+            successEl.textContent = '';
+            saveBtn.disabled = true;
+
+            if (!user || !user.id) {
+                errorEl.textContent = '사용자 정보를 불러오지 못했습니다. 다시 시도해주세요.';
+                saveBtn.disabled = false;
+                return;
+            }
+
+            try {
+                const formData = new FormData(form);
+                const imageFile = formData.get('profile-image');
+                formData.delete('profile-image'); // 이미지 파일은 별도로 처리
+
+                // 텍스트 데이터만 JSON으로 변환
+                const updateData = {};
+                for (let [key, value] of formData.entries()) {
+                    if (key !== 'username' && key !== 'profile-image') { // username과 profile-image는 제외
+                        updateData[key] = value === '' ? null : value; // 빈 문자열을 null로 변환
+                    }
+                }
+
+                // 1. 프로필 텍스트 정보 업데이트
+                const res = await fetch(`${API_URL}/users/me`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-User_ID': user.id // X-User_ID 헤더 추가
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(updateData)
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    let errorMessage = '프로필 수정 실패';
+                    if (errData.detail) {
+                        if (Array.isArray(errData.detail)) {
+                            errorMessage = errData.detail.map(err => `${err.loc.join('.')}: ${err.msg}`).join('; ');
+                        } else {
+                            errorMessage = errData.detail;
+                        }
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                // 2. 프로필 이미지 업로드 (선택 사항)
+                if (imageFile && imageFile.size > 0) {
+                    const imageFormData = new FormData();
+                    imageFormData.append("file", imageFile);
+
+                    const imageRes = await fetch(`${API_URL}/users/me/upload_image`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: imageFormData
+                    });
+
+                    if (!imageRes.ok) {
+                        const imageErrData = await imageRes.json();
+                        console.error('이미지 업로드 실패:', imageErrData);
+                        // 이미지 업로드 실패는 전체 프로필 수정 실패로 간주하지 않을 수 있음
+                    }
+                }
+
+                successEl.textContent = '프로필이 성공적으로 수정되었습니다!';
+            } catch (err) {
+                errorEl.textContent = err.message;
+                console.error('프로필 저장 오류:', err);
+            } finally {
+                saveBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

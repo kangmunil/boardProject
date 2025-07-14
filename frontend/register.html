@@ -95,49 +95,21 @@
             return;
         }
 
-        // 2. 텍스트 데이터만 먼저 추출
+        // 2. 모든 폼 데이터를 FormData 객체로 추출 (텍스트 + 파일)
         const formData = new FormData(e.target);
-        const textData = {
-            username: formData.get('username'),
-            email: formData.get('email'),
-            password: formData.get('password'),
-            name: formData.get('name'),
-            birthday: formData.get('birthday'),
-            gender: formData.get('gender'),
-            phone: formData.get('phone'),
-            bio: formData.get('bio')
-        };
 
+        // 3. FormData 객체로 회원가입 요청
         try {
-            // 3. 텍스트 데이터로 회원가입 및 자동 로그인 요청
             const registerResponse = await fetch('/api/auth/register', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(textData)
+                body: formData, // FormData 객체를 직접 전달
+                credentials: 'include'
             });
             if (!registerResponse.ok) {
                 const errorData = await registerResponse.json();
                 throw new Error(errorData.detail || '회원가입에 실패했습니다.');
             }
             
-            // 4. 프로필 사진 파일이 있으면, 이어서 이미지 업로드 요청
-            const imageFile = imageInput.files[0];
-            if (imageFile) {
-                const imageFormData = new FormData();
-                imageFormData.append("file", imageFile);
-
-
-                const imageResponse = await fetch('/api/users/me/upload-image', {
-                    method: 'POST',
-                    body: imageFormData,
-                    credentials: 'include' // 자동 로그인된 세션 쿠키를 보내기 위해 필수
-                });
-
-                if (!imageResponse.ok) {
-                    console.error('이미지 업로드에 실패했지만, 회원가입은 완료되었습니다.');
-                }
-            }
-
             alert('회원가입이 완료되었습니다. 메인 페이지로 이동합니다.');
             window.location.href = '/index.html';
 

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용자 프로필</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+    <style>
+        .profile-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: #fff;
+            text-align: left;
+        }
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            border: 2px solid #eee;
+        }
+        .profile-info p {
+            margin: 10px 0;
+            font-size: 1.1em;
+            color: #555;
+        }
+        .profile-info strong {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- ── NAV ─────────────────────────────── -->
+    <header class="navbar">
+        <div class="logo"><a href="/">MyService</a></div>
+        <nav class="nav-links">
+            <a href="/board">게시판</a>
+            <a href="/blog">블로그</a>
+            <a href="/about">소개</a>
+        </nav>
+        <div class="auth" id="auth-links">
+            <a href="/login">로그인</a>
+            <a href="/register" class="btn-primary">회원가입</a>
+        </div>
+    </header>
+
+    <div class="container" style="display: flex;">
+        <div class="profile-container">
+            <h2>사용자 프로필</h2>
+            <img id="profile-image" class="profile-image" alt="프로필 이미지"><br>
+            <a href="/profile_edit.html" class="btn" style="background: #007bff; color: white; border: none; padding: 0.5rem; margin-left: 7rem; cursor: pointer;">정보수정</a>
+            <div class="profile-info">
+                <p><strong>아이디:</strong> <span id="username"></span></p>
+                <p><strong>이메일:</strong> <span id="email"></span></p>
+                <p><strong>이름:</strong> <span id="name"></span></p>
+                <p><strong>생일:</strong> <span id="birthday"></span></p>
+                <p><strong>성별:</strong> <span id="gender"></span></p>
+                <p><strong>전화번호:</strong> <span id="phone"></span></p>
+                <p><strong>자기소개:</strong> <span id="bio"></span></p>
+            </div>
+            <p id="error-message" style="color: red;"></p>
+        </div>
+    </div>
+    <script src="/assets/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', renderNavbar);
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch(`${API_URL}/users/me`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || '프로필을 불러오는데 실패했습니다.');
+                }
+
+                const user = await response.json();
+                console.log("User data from API:", user); // 디버깅용
+
+                document.getElementById('username').innerText = user.username || 'N/A';
+                document.getElementById('email').innerText = user.email || 'N/A';
+                document.getElementById('name').innerText = user.name || 'N/A'; // name 필드는 UserPublic에 없으므로 N/A로 표시될 수 있음
+                document.getElementById('birthday').innerText = user.birthday || 'N/A'; // birthday 필드는 UserPublic에 없으므로 N/A로 표시될 수 있음
+                document.getElementById('gender').innerText = user.gender || 'N/A'; // gender 필드는 UserPublic에 없으므로 N/A로 표시될 수 있음
+                document.getElementById('phone').innerText = user.phone || 'N/A'; // phone 필드는 UserPublic에 없으므로 N/A로 표시될 수 있음
+                document.getElementById('bio').innerText = user.bio || 'N/A';
+                document.getElementById('profile-image').src = user.profile_image_url || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-JdoMKl_cBoE-qqWZjn7OH-dvmZK73uVZ9w&s';
+
+            } catch (error) {
+                errorMessageElement.innerText = error.message;
+                console.error('Error fetching user profile:', error);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -16,9 +16,11 @@ async function getCurrentUser() {
 
         // 서버가 200 OK 응답을 주면, 유효한 세션이 있다는 의미입니다.
         if (response.ok) {
-            return await response.json(); // 사용자 정보를 반환합니다.
+            const userData = await response.json();
+            console.log("Current user data:", userData); // 디버깅용
+            return userData;
         }
-        // 401 등 다른 응답이 오면, 로그인되지 않은 것으로 간주합니다.
+        console.log("No current user (response not ok)."); // 디버깅용
         return null;
     } catch (error) {
         console.error("Failed to fetch current user:", error);
@@ -34,10 +36,12 @@ async function renderNavbar() {
     if (!authLinks) return;
 
     const user = await getCurrentUser();
+    console.log("User in renderNavbar:", user); // 디버깅용
     
     if (user) { // 로그인된 경우
         authLinks.innerHTML = `
             <span class="navbar-text">환영합니다, ${user.username}님!</span>
+            <a href="/profile_view.html" class="btn" style="background: #007bff; color: white; border: none; padding: 0.5rem; margin-left: 1rem; cursor: pointer;">내 정보 보기</a>
             <button id="logout-btn" class="btn" style="background: #6c757d; color: white; border: none; padding: 0.5rem; margin-left: 1rem; cursor: pointer;">로그아웃</button>`;
         
         document.getElementById('logout-btn').addEventListener('click', async () => {
