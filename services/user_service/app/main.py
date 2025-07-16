@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status, Response, Depends, HTTPException, Form, Cookie, UploadFile, File, Header
+from fastapi import FastAPI, status, Response, Depends, HTTPException, Form, Cookie, UploadFile, File, Header, Request
 from typing import Annotated, Optional
 from starlette.staticfiles import StaticFiles
 from sqlmodel import SQLModel
@@ -18,6 +18,13 @@ from database import init_db, get_session
 from auth import get_password_hash, create_session, verify_password, get_user_id_from_session, delete_session
 
 app=FastAPI(title="User Service")
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    print(f"[DEBUG] Incoming request: {request.method} {request.url}")
+    response = await call_next(request)
+    print(f"[DEBUG] Outgoing response: {response.status_code}")
+    return response
 
 STATIC_DIR= "/app/static"
 PROFILE_IMAGE_DIR = f"{STATIC_DIR}/profiles"
@@ -50,25 +57,45 @@ async def on_startup():
 def health_check():
     return {"status":"User service runnng"}
 
+@app.post("/test-post")
+async def test_post_endpoint(request: Request):
+    body = await request.body()
+    print(f"[DEBUG] Test POST endpoint received body: {body.decode()}")
+    return {"message": "Test POST successful"}
+
+from starlette.requests import Request, ClientDisconnect
+
 @app.post('/api/auth/register', response_model=UserPublic, status_code=status.HTTP_201_CREATED)
 async def register_user(
     response: Response,
     session: Annotated[AsyncSession, Depends(get_session)],
     redis: Annotated[Redis, Depends(get_redis)],
-    username: str = Form(...),
-    email: str = Form(...),
-    password: str = Form(...),
-    name: str = Form(...),
-    birthday: str = Form(...),
-    gender: Optional[str] = Form(None),
-    phone: str = Form(...),
-    bio: Optional[str] = Form(None),
-    file: Optional[UploadFile] = File(None)
+    request: Request # Request 객체로 변경
 ):
+    try:
+        form_data = await request.form() # 폼 데이터 직접 파싱
+    except ClientDisconnect:
+        return {"error": "Client disconnected before the request was completed."}
+    username = form_data.get("username")
+    email = form_data.get("email")
+    password = form_data.get("password")
+    name = form_data.get("name")
+    birthday = form_data.get("birthday")
+    gender = form_data.get("gender")
+    phone = form_data.get("phone")
+    bio = form_data.get("bio")
+    file = form_data.get("profile_image") # 파일은 UploadFile 객체로 가져옴
+    print(f"[DEBUG] Received profile_image: {file}, type: {type(file)}")
+
+    if not all([username, email, password, name, birthday, phone]):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="필수 정보를 모두 입력해주세요.")
+
+    print(f"[DEBUG] Register attempt for email: {email}")
     statement = select(User).where(User.email==email)
     exist_user_result = await session.exec(statement)
 
     if exist_user_result.one_or_none():
+        print(f"[DEBUG] Email already exists: {email}")
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="이미 사용중인 이메일입니다. ")
     
     hashed_password = get_password_hash(password)
@@ -106,7 +133,10 @@ async def register_user(
 
     session_id = await create_session(redis, new_user.id)
     response.set_cookie(key="session_id", value=session_id, httponly=True, samesite="lax", max_age=3600, path="/")
-
+    print(f"[DEBUG] Registration successful for email: {email}, session_id: {session_id}")
+    # 세션 생성 후 바로 get_user_id_from_session 호출하여 확인
+    retrieved_user_id = await get_user_id_from_session(redis, session_id)
+    print(f"[DEBUG] After registration, retrieved user_id from session: {retrieved_user_id}")
     return create_user_public(new_user)
 
 @app.post("/api/auth/login", status_code=status.HTTP_200_OK)
@@ -114,14 +144,29 @@ async def login(
     response: Response,
     session: Annotated[AsyncSession, Depends(get_session)],
     redis: Annotated[Redis, Depends(get_redis)],
-    email: str = Form(...),
-    password: str = Form(...),
+    request: Request # Request 객체로 변경
 ):
+    form_data = await request.form() # 폼 데이터 직접 파싱
+    email = form_data.get("email")
+    password = form_data.get("password")
+
+    if not email or not password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="이메일과 비밀번호를 입력해주세요.")
+
+    print(f"[DEBUG] Login attempt for email: {email}")
     statement = select(User).where(User.email == email)
     user_result = await session.exec(statement)
     user = user_result.one_or_none()
 
-    if not user or not verify_password(password, user.hashed_password):
+    if not user:
+        print(f"[DEBUG] User not found for email: {email}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="이메일 또는 비밀번호가 잘못되었습니다.",
+        )
+
+    if not verify_password(password, user.hashed_password):
+        print(f"[DEBUG] Invalid password for user: {email}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="이메일 또는 비밀번호가 잘못되었습니다.",
@@ -136,6 +181,10 @@ async def login(
         max_age=3600,
         path="/",
     )
+    print(f"[DEBUG] Login successful for user: {email}, session_id: {session_id}")
+    # 세션 생성 후 바로 get_user_id_from_session 호출하여 확인
+    retrieved_user_id = await get_user_id_from_session(redis, session_id)
+    print(f"[DEBUG] After login, retrieved user_id from session: {retrieved_user_id}")
     return {"message": "로그인 성공"}
 
 @app.get("/api/auth/me", response_model=UserPublic)

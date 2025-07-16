@@ -128,9 +128,15 @@
                 posts.forEach(post => {
                     const postElement = document.createElement('div');
                     postElement.classList.add('blog-post-item');
+                    let imageHtml = '';
+                    if (post.images && post.images.length > 0) {
+                        // 첫 번째 이미지만 표시
+                        imageHtml = `<img src="/static/images/${post.images[0]}" alt="게시물 이미지" style="max-width: 100%; height: auto; margin-top: 10px;">`;
+                    }
                     postElement.innerHTML = `
                         <h3><a href="/blog.html?id=${post.id}">${post.title}</a></h3>
                         <p class="blog-post-meta">작성자 ID: ${post.owner_id} | 작성일: ${new Date(post.create_at).toLocaleString()}</p>
+                        ${imageHtml}
                         <p>${post.content.substring(0, 150)}...</p>
                     `;
                     blogPostsList.appendChild(postElement);

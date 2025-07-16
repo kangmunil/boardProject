@@ -65,6 +65,9 @@
             <div id="post-content" class="blog-post-content">
                 <!-- 게시물 내용이 여기에 로드됩니다 -->
             </div>
+            <div id="post-images" style="margin-top: 20px;">
+                <!-- 이미지가 여기에 로드됩니다 -->
+            </div>
             <p id="error-message"></p>
         </div>
     </div>
@@ -78,6 +81,7 @@
         const postDate = document.getElementById('post-date');
         const postTags = document.getElementById('post-tags');
         const postContent = document.getElementById('post-content');
+        const postImages = document.getElementById('post-images');
         const errorMessageElement = document.getElementById('error-message');
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -102,6 +106,19 @@
                 postDate.textContent = new Date(post.create_at).toLocaleString();
                 postTags.textContent = post.tags || '없음';
                 postContent.innerHTML = post.content.replace(/\n/g, '<br>'); // 줄바꿈 처리
+
+                // 이미지 표시
+                if (post.images && post.images.length > 0) {
+                    post.images.forEach(imageFilename => {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = `/static/images/${imageFilename}`;
+                        imgElement.alt = '게시물 이미지';
+                        imgElement.style.maxWidth = '100%';
+                        imgElement.style.height = 'auto';
+                        imgElement.style.marginBottom = '10px';
+                        postImages.appendChild(imgElement);
+                    });
+                }
 
             } catch (error) {
                 errorMessageElement.textContent = error.message;

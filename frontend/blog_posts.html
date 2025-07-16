@@ -92,6 +92,10 @@
                     <label for="tags">태그 (쉼표로 구분):</label>
                     <input type="text" id="tags" name="tags">
                 </div>
+                <div class="form-group">
+                    <label for="image">이미지 업로드 (선택 사항):</label>
+                    <input type="file" id="image" name="image" accept="image/*">
+                </div>
                 <button type="submit" class="btn-submit" id="submit-post-btn">게시물 작성</button>
             </form>
             <p id="error-message"></p>
@@ -117,17 +121,25 @@
             const title = document.getElementById('title').value;
             const content = document.getElementById('content').value;
             const tags = document.getElementById('tags').value;
+            const imageFile = document.getElementById('image').files[0];
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('content', content);
+            if (tags) {
+                formData.append('tags', tags);
+            }
+            if (imageFile) {
+                formData.append('file', imageFile);
+            }
 
             try {
                 const response = await fetch(`${API_URL}/blog/posts`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // X-User-Id 헤더는 auth.js의 getCurrentUser 함수에서 자동으로 처리될 것으로 예상
-                        // 하지만 명시적으로 필요하다면 여기에 추가해야 함
-                    },
+                    // FormData를 사용할 때는 Content-Type 헤더를 수동으로 설정하지 않습니다.
+                    // 브라우저가 자동으로 multipart/form-data를 설정합니다.
                     credentials: 'include',
-                    body: JSON.stringify({ title, content, tags })
+                    body: formData
                 });
 
                 if (!response.ok) {
