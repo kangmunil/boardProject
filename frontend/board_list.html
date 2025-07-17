@@ -35,14 +35,14 @@
     <div class="logo"><a href="/">MyService</a></div>
 
     <nav class="nav-links">
-      <a href="/board" aria-current="page">게시판</a>
-      <a href="/blog">블로그</a>
+      <a href="/board_list.html" aria-current="page">게시판</a>
+      <a href="/blog_list.html">블로그</a>
       <a href="/about">소개</a>
     </nav>
 
     <div class="auth">
-      <a href="/login">로그인</a>
-      <a href="/signup" class="btn-primary">회원가입</a>
+      <a href="/login.html">로그인</a>
+      <a href="/register.html" class="btn-primary">회원가입</a>
     </div>
   </header>
 
@@ -50,7 +50,7 @@
   <main class="board-wrapper">
     <div class="board-header">
       <h2>📌 공지·자유 게시판</h2>
-      <a href="/board/write" class="btn-write">글쓰기</a>
+      <a href="/board_post.html" class="btn-write">글쓰기</a>
     </div>
 
     <!-- 검색 창 -->
@@ -72,29 +72,10 @@
         </tr>
       </thead>
       <tbody>
-        <!-- 예시 더미 데이터 -->
-        <tr>
-          <td>123</td>
-          <td class="title"><a href="/board/123">[공지] 서비스 이용 가이드</a></td>
-          <td>관리자</td>
-          <td>2025-07-09</td>
-          <td>512</td>
+        <!-- 더미 데이터 -->
+        <tr id="board-body">
+          <!-- 여기는 JS가 채울 곳이므로 비워 둡니다 -->
         </tr>
-        <tr>
-          <td>122</td>
-          <td class="title"><a href="/board/122">초보자를 위한 FAQ 모음</a></td>
-          <td>info_bot</td>
-          <td>2025-07-08</td>
-          <td>302</td>
-        </tr>
-        <tr>
-          <td>121</td>
-          <td class="title"><a href="/board/121">오늘의 질문: CSS Flexbox 이해하기</a></td>
-          <td>dev_kim</td>
-          <td>2025-07-08</td>
-          <td>198</td>
-        </tr>
-        <!-- 실제 사용 시 서버에서 <tr> 반복 렌더링 -->
       </tbody>
     </table>
   </main>
@@ -103,5 +84,50 @@
   <footer class="footer">
     <p>© 2025 MyService. All rights reserved.</p>
   </footer>
+
+  <script src="/assets/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', renderNavbar);
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+      const tbody = document.querySelector('table.board tbody');
+
+      // 1) 로딩 표시
+      tbody.innerHTML = '<tr><td colspan="5">게시글을 불러오는 중…</td></tr>';
+
+      try {
+        // 2) 백엔드에서 게시글 JSON 받아오기
+        //   예:  GET /api/board?offset=0&limit=20
+        const res   = await fetch('/api/board?limit=20');
+        if (!res.ok) throw new Error('server error');
+        const { items } = await res.json();      // [{id, title, author, created_at, views}, …]
+
+        // 3) 테이블 초기화
+        tbody.innerHTML = '';
+
+        // 4) 받아온 데이터로 <tr> 동적으로 생성
+        items.forEach(post => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${post.id}</td>
+            <td class="title"><a href="/board/${post.id}">${post.title}</a></td>
+            <td>${post.author}</td>
+            <td>${new Date(post.created_at).toLocaleDateString()}</td>
+            <td>${post.views}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // 5) 게시글이 하나도 없을 때
+        if (items.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5">등록된 글이 없습니다.</td></tr>';
+        }
+      } catch (err) {
+        console.error(err);
+        tbody.innerHTML = '<tr><td colspan="5">게시글을 불러오지 못했습니다.</td></tr>';
+      }
+    });
+
+  </script>
 </body>
 </html>

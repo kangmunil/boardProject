@@ -5,7 +5,8 @@ from typing import Annotated, Optional, List
 from sqlmodel import select, Relationship
 from sqlmodel.ext.asyncio.session import AsyncSession
 from database import init_db, get_session
-from models import BlogArticle, BlogPostCreate, BlogPostPublic, ArticleImage
+from models import BlogArticle, ArticleImage
+from schemas import BlogPostCreate, BlogPostPublic
 import math
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -34,26 +35,13 @@ async def get_current_user_id(
 ) -> int:
     if x_user_id is None:
         raise HTTPException(status_code=401, detail="Not authenticated: X-User-Id header missing")
-    
-    # user_service에 사용자 ID 유효성 검사 요청 (선택 사항, 필요시 활성화)
-    # try:
-    #     async with httpx.AsyncClient() as client:
-    #         response = await client.get(f"{USER_SERVICE_URL}/api/users/{x_user_id}")
-    #         response.raise_for_status()
-    # except httpx.HTTPStatusError as e:
-    #     if e.response.status_code == 404:
-    #         raise HTTPException(status_code=401, detail="Not authenticated: User not found")
-    #     raise HTTPException(status_code=500, detail=f"User service error: {e}")
-    # except httpx.RequestError as e:
-    #     raise HTTPException(status_code=500, detail=f"Could not connect to user service: {e}")
-
     return x_user_id
 
 @app.get("/")
 def health_check():
     return {"status": "Blog service running"}
 
-@app.post("/api/blog/posts", response_model=BlogPostPublic, status_code=status.HTTP_201_CREATED)
+@app.post("/blog/posts", response_model=BlogPostPublic, status_code=status.HTTP_201_CREATED)
 async def create_blog_post(
     session: Annotated[AsyncSession, Depends(get_session)],
     owner_id: Annotated[int, Depends(get_current_user_id)],
@@ -108,7 +96,7 @@ async def create_blog_post(
             images=loaded_images
         )
 
-@app.get("/api/blog/posts", response_model=List[BlogPostPublic])
+@app.get("/blog/posts", response_model=List[BlogPostPublic])
 async def get_blog_posts(
     session: Annotated[AsyncSession, Depends(get_session)],
     page: int = 1,
@@ -136,7 +124,7 @@ async def get_blog_posts(
         for post in posts.all()
     ]
 
-@app.get("/api/blog/posts/{post_id}", response_model=BlogPostPublic)
+@app.get("/blog/posts/{post_id}", response_model=BlogPostPublic)
 async def get_blog_post(
     post_id: int,
     session: Annotated[AsyncSession, Depends(get_session)]

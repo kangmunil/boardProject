@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import create_async_engine
 # .env 파일 로드
 load_dotenv()
 DATABASE_URL=os.getenv("DATABASE_URL")
+if DATABASE_URL is None:
+    raise ValueError("환경변수가 설정되지않았습니다.")
 
 engine = create_async_engine(DATABASE_URL, echo=True) 
 

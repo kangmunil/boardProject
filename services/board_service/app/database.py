@@ -2,15 +2,14 @@ import os
 from dotenv import load_dotenv
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 
 # .env 파일 로드
 load_dotenv()
 DATABASE_URL=os.getenv("DATABASE_URL")
 if DATABASE_URL is None:
     raise ValueError("환경변수가 설정되지않았습니다.")
-
-engine = create_async_engine(DATABASE_URL, echo=True) 
+engine: AsyncEngine = create_async_engine (DATABASE_URL, echo=True) 
 
 async def init_db():
     async with engine.begin() as conn:

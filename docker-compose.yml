@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   nginx:
     image: nginx:alpine
@@ -12,6 +14,7 @@ services:
       - api_gateway
     networks:
       - webnet
+
   api_gateway:
     build: ./gateway
     volumes:
@@ -21,21 +24,22 @@ services:
     environment:
       - USER_SERVICE_URL=http://user_service:8001
       - BLOG_SERVICE_URL=http://blog_service:8002
+      - BOARD_SERVICE_URL=http://board_service:8003
     depends_on:
       user_service:
         condition: service_started
+      blog_service:
+        condition: service_started
+      board_service:
+        condition: service_started
     networks:
       - webnet
-    
+
   user_service:
     build: ./services/user_service
-      # 디렉토리 이름
     volumes:
       - ./services/user_service/app:/app
-      - ./uploads/profiles:/app/static/profiles
-    ports:
-      - "8080:8001"
-      # docker compose에서도 8000을 보내는데 8080:->8000 뒤에 들어온다.  
+      - ./uploads/profiles:/app/static/profiles 
     environment:
       - DATABASE_URL=mysql+asyncmy://${DB_USER}:${DB_PASSWORD}@user_db:3306/user_db
       - REDIS_URL=${REDIS_URL}
@@ -47,13 +51,10 @@ services:
     networks:
       - webnet
 
-  
-
   user_db:
     image: mysql:8.0
     ports:
       - "33061:3306"
-      # local:backend
     restart: always
     command: --default-authentication-plugin=mysql_native_password
     environment:
@@ -73,16 +74,13 @@ services:
 
   blog_service:
     build: ./services/blog_service
-      # 디렉토리 이름
     volumes:
       - ./services/blog_service/app:/app
       - ./uploads/images:/app/static/images
-    ports:
-      - "8081:8002"
-      # docker compose에서도 8000을 보내는데 8080:->8000 뒤에 들어온다.  
     environment:
       - DATABASE_URL=mysql+asyncmy://${DB_USER}:${DB_PASSWORD}@blog_db:3306/blog_db
       - USER_SERVICE_URL=http://user_service:8001
+      - REDIS_URL=${REDIS_URL}
     depends_on:
       blog_db:
         condition: service_healthy
@@ -91,13 +89,10 @@ services:
     networks:
       - webnet
 
-  
-
   blog_db:
     image: mysql:8.0
     ports:
       - "33062:3306"
-      # local:backend
     restart: always
     command: --default-authentication-plugin=mysql_native_password
     environment:
@@ -115,6 +110,41 @@ services:
     volumes:
       - blog_db_data:/var/lib/mysql
 
+  board_service:
+    build: ./services/board_service
+    volumes:
+      - ./services/board_service/app:/app
+      - ./uploads/images:/app/static/images 
+    environment:
+      - DATABASE_URL=mysql+asyncmy://${DB_USER}:${DB_PASSWORD}@board_db:3306/board_db
+      - USER_SERVICE_URL=http://user_service:8001
+      - REDIS_URL=${REDIS_URL}
+    depends_on:
+      board_db:
+        condition: service_healthy
+    networks:
+      - webnet
+
+  board_db:
+    image: mysql:8.0
+    ports:
+      - "33063:3306"
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=${USER_DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=board_db
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - webnet
+    volumes:
+      - board_db_data:/var/lib/mysql
 
   redis_db:
     image: redis:alpine
@@ -129,5 +159,7 @@ services:
 volumes:
   user_db_data:
   blog_db_data:
+  board_db_data:
+
 networks:
   webnet:

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Write a Post | Notice Board</title>
+
+  <!-- 메인 스타일시트 -->
+  <link rel="stylesheet" href="/assets/css/style.css" />
+
+  <!-- 글쓰기 전용 보조 스타일 -->
+  <style>
+    /* 폼 배경색, 그림자, 여백을 추가해 전체적인 느낌을 개선 */
+    .board-form{
+      max-width: 800px;
+      margin: 60px auto;
+      padding: 30px 6%;
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .board-form h2 {
+      margin-bottom: 24px;
+      text-align: center;
+      font-size: 1.8rem;
+      color: #333;
+      font-weight: 600;
+    }
+
+    /* input, textarea 스타일을 통일성 있게 개선 */
+    .form-row {
+      margin-bottom: 20px;
+    }
+
+    .form-row label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    .board-form input[type="text"],
+    .board-form textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      background-color: #fafafa;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    /* 포커스 시 색상 변화 및 그림자 추가 */
+    .board-form input[type="text"]:focus,
+    .board-form textarea:focus {
+      border-color: #0074d9;
+      box-shadow: 0 0 8px rgba(0, 116, 217, 0.2);
+    }
+
+    /* 글자 영역 최소 높이 지정 */
+    .board-form textarea {
+      min-height: 200px;
+    }
+
+    /* 제출 버튼 */
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    /* 버튼 스타일 */
+    .btn-secondary {
+      padding: 10px 20px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      background: #f5f5f5;
+      color: #444;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    /* hover 효과 추가 */
+    .btn-secondary:hover {
+      background: #e0e7ff;
+      border-color: #0074d9;
+    }
+
+    /* 등록 버튼 스타일 */
+    .btn-primary {
+      padding: 10px 20px;
+      border-radius: 6px;
+      background: #0074d9;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    /* hover 및 클릭 시 효과 */
+    .btn-primary:hover {
+      background: #005bb5;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+  </style>
+</head>
+<body>
+  <!-- 상단 내비게이션 -->
+  <header class="navbar">
+    <div class="logo"><a href="/">MyService</a></div>
+
+    <nav class="nav-links">
+      <a href="/board_list.html" aria-current="page">게시판</a>
+      <a href="/blog_list.html">블로그</a>
+      <a href="/about">소개</a>
+    </nav>
+
+    <div class="auth">
+      <a href="/login.html">로그인</a>
+      <a href="/register.html" class="btn-primary">회원가입</a>
+    </div>
+  </header>
+
+  <!-- 글쓰기 폼 -->
+  <main class="board-form">
+    <h2>📝 글쓰기</h2>
+    <form action="/api/board" method="POST">
+      <!-- 제목 -->
+      <div class="form-row">
+        <label for="title">제목</label>
+        <input type="text" id="title" name="title" placeholder="제목을 입력하세요" required />
+      </div>
+
+      <!-- 내용 -->
+      <div class="form-row">
+        <label for="content">내용</label>
+        <textarea id="content" name="content" placeholder="내용을 입력하세요" required></textarea>
+      </div>
+
+      <!-- 액션 버튼 -->
+      <div class="form-actions">
+        <button type="button" onclick="history.back()" class="btn-secondary">취소</button>
+        <input type="submit" value="등록" class="btn-primary" />
+      </div>
+    </form>
+  </main>
+
+  <!-- 푸터 -->
+  <footer class="footer">
+    <p>© 2025 MyService. All rights reserved.</p>
+  </footer>
+
+  <script src="/assets/js/auth.js"></script>
+</body>
+</html>

@@ -77,10 +77,10 @@ async def reverse_proxy(request: Request):
     if not (path == "/api/auth/login" or path == "/api/auth/register"):
         if session_id:
             try:
-                # user_service의 /api/auth/me 엔드포인트로 요청을 보냅니다.
+                # user_service의 /auth/me 엔드포인트로 요청을 보냅니다.
                 # 이때, 원래 요청의 session_id 쿠키를 전달합니다.
                 auth_response = await client.get(
-                    f"{USER_SERVICE_URL}/api/auth/me",
+                    f"{USER_SERVICE_URL}/auth/me",
                     headers={"Cookie": f"session_id={session_id}"}
                 )
                 auth_response.raise_for_status() # 200번대 응답이 아니면 예외 발생
@@ -99,24 +99,31 @@ async def reverse_proxy(request: Request):
             except httpx.RequestError as e:
                 raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Could not connect to user service: {e}")
 
-    # 블로그 게시물 생성 요청에 대한 인증 처리 (X-User-ID 헤더 추가)
-    if request.method == "POST" and path == "/api/blog/posts":
+    # 블로그 및 게시판 게시물 생성 요청에 대한 인증 처리 (X-User-ID 헤더 추가)
+    if request.method == "POST" and (path == "/api/blog/posts" or path.startswith("/api/board")):
         if "X-User-ID" not in auth_headers:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated for blog post creation")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated for post creation")
         headers.update(auth_headers)
     elif auth_headers: # 다른 요청에도 인증 헤더가 있다면 추가
         headers.update(auth_headers)
 
-    if path.startswith("/api/users") or path.startswith("/api/auth"):
+    # Construct the URL for the internal service
+    if path.startswith("/api/users"):
         base_url = USER_SERVICE_URL
+        internal_path = path.replace("/api/users", "/users", 1)
+    elif path.startswith("/api/auth"):
+        base_url = USER_SERVICE_URL
+        internal_path = path.replace("/api/auth", "/auth", 1)
     elif path.startswith("/api/board"):
         base_url = BOARD_SERVICE_URL
+        internal_path = path.replace("/api/board", "/board", 1)
     elif path.startswith("/api/blog"):
         base_url = BLOG_SERVICE_URL
+        internal_path = path.replace("/api/blog", "/blog", 1)
     else:
         raise HTTPException(status_code=404, detail="Endpoint not found")
 
-    url = f"{base_url}{path}?{request.url.query}"
+    url = f"{base_url}{internal_path}?{request.url.query}"
     
     # httpx 요청 파라미터 초기화
     httpx_params = {
@@ -137,14 +144,18 @@ async def reverse_proxy(request: Request):
             headers["content-type"] = original_content_type
             httpx_params["headers"] = headers
         elif "application/x-www-form-urlencoded" in original_content_type:
-            print(f"[DEBUG] Proxying x-www-form-urlencoded request to {base_url}{path}")
+            print(f"[DEBUG] Proxying x-www-form-urlencoded request to {base_url}{internal_path}")
             try:
-                # request.form()을 사용하여 파싱
                 form_data = await request.form()
                 data = {key: value for key, value in form_data.items()}
-                httpx_params["data"] = data
-                if "content-type" in httpx_params["headers"]:
-                    del httpx_params["headers"]["content-type"]
+                # /api/board 경로에 대한 POST 요청인 경우 JSON으로 변환
+                if internal_path == "/board" and request.method == "POST":
+                    httpx_params["json"] = data
+                    httpx_params["headers"]["content-type"] = "application/json"
+                else:
+                    httpx_params["data"] = data
+                    if "content-type" in httpx_params["headers"]:
+                        del httpx_params["headers"]["content-type"]
             except Exception as e:
                 print(f"[ERROR] Failed to parse x-www-form-urlencoded body: {e}")
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid form data")
@@ -157,6 +168,7 @@ async def reverse_proxy(request: Request):
             httpx_params["content"] = await request.body()
 
     print(f"[DEBUG] httpx_params: {httpx_params}")
+    print(f"[DEBUG] Constructed URL for internal service: {url}")
     try:
         rp_resp = await client.request(**httpx_params)
         print(f"[DEBUG] Received response from {base_url}{path}: {rp_resp.status_code}")

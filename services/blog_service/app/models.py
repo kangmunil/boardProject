@@ -3,6 +3,7 @@ from sqlmodel import Field, SQLModel, Relationship
 from pydantic import BaseModel
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from sqlalchemy import Column, String, Integer
 
 class ArticleImage(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -13,24 +14,10 @@ class ArticleImage(SQLModel, table=True):
 
 class BlogArticle(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    title: str = Field(index=True)
+    title: str = Field(sa_column=Column(String, index=True))
     content: str
     create_at: datetime = Field(default_factory=lambda: datetime.now(ZoneInfo("Asia/Seoul")))
-    owner_id: int
+    owner_id: int = Field(sa_column=Column(Integer, index=True))
     tags: Optional[str] = Field(default=None)
 
     images: List["ArticleImage"] = Relationship(back_populates="article")
-
-class BlogPostCreate(SQLModel):
-    title: str
-    content: str
-    tags: Optional[str] = None
-
-class BlogPostPublic(SQLModel):
-    id: int
-    title: str
-    content: str
-    create_at: datetime
-    owner_id: int
-    tags: Optional[str] = None
-    images: List[str] = [] # 이미지 파일명 리스트 추가

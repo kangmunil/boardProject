@@ -13,7 +13,8 @@ import uuid
 import aiofiles
 #operating system
 
-from models import User, UserCreate, UserPublic, Userlogin, UserUpdate, UpdatePassword
+from models import User
+from schemas import UserCreate, UserPublic, UserLogin, UserUpdate, UpdatePassword
 from database import init_db, get_session
 from auth import get_password_hash, create_session, verify_password, get_user_id_from_session, delete_session
 
@@ -65,7 +66,7 @@ async def test_post_endpoint(request: Request):
 
 from starlette.requests import Request, ClientDisconnect
 
-@app.post('/api/auth/register', response_model=UserPublic, status_code=status.HTTP_201_CREATED)
+@app.post('/auth/register', response_model=UserPublic, status_code=status.HTTP_201_CREATED)
 async def register_user(
     response: Response,
     session: Annotated[AsyncSession, Depends(get_session)],
@@ -139,7 +140,7 @@ async def register_user(
     print(f"[DEBUG] After registration, retrieved user_id from session: {retrieved_user_id}")
     return create_user_public(new_user)
 
-@app.post("/api/auth/login", status_code=status.HTTP_200_OK)
+@app.post("/auth/login", status_code=status.HTTP_200_OK)
 async def login(
     response: Response,
     session: Annotated[AsyncSession, Depends(get_session)],
@@ -187,7 +188,7 @@ async def login(
     print(f"[DEBUG] After login, retrieved user_id from session: {retrieved_user_id}")
     return {"message": "로그인 성공"}
 
-@app.get("/api/auth/me", response_model=UserPublic)
+@app.get("/auth/me", response_model=UserPublic)
 async def get_current_user(
     response: Response,
     redis: Annotated[Redis, Depends(get_redis)],
@@ -211,7 +212,7 @@ async def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     return create_user_public(user)
 
-@app.post("/api/auth/logout")
+@app.post("/auth/logout")
 async def logout(
     response: Response,
     redis: Annotated[Redis, Depends(get_redis)],
@@ -222,13 +223,13 @@ async def logout(
     response.delete_cookie("session_id", path="/")
     return {"message":"LOGOUT 성공"}
 
-@app.get("/api/users", response_model=list[UserPublic])
+@app.get("/users", response_model=list[UserPublic])
 async def get_all_users(session: Annotated[AsyncSession, Depends(get_session)]):
     statement = select(User)
     users = await session.exec(statement)
     return [create_user_public(user) for user in users.all()]
 
-@app.get("/api/users/{user_id}", response_model=UserPublic)
+@app.get("/users/{user_id}", response_model=UserPublic)
 async def get_user_by_id(
     user_id: int,
     session: Annotated[AsyncSession, Depends(get_session)]
@@ -244,7 +245,7 @@ async def get_user_list(session: Annotated[AsyncSession, Depends(get_session)]):
     users = result.scalars().all()
     return [UserList(id=user.id, username=user.username, email=user.email) for user in users]
 
-@app.patch("/api/users/me", response_model=UserPublic)
+@app.patch("/users/me", response_model=UserPublic)
 async def update_my_profile(
     user_data: UserUpdate,
     session: Annotated[AsyncSession, Depends(get_session)],
@@ -266,7 +267,7 @@ async def update_my_profile(
     return create_user_public(db_user)
 
 
-@app.post("/api/users/me/upload_image", response_model=UserPublic)
+@app.post("/users/me/upload_image", response_model=UserPublic)
 async def upload_my_profile_image(
     session: Annotated[AsyncSession, Depends(get_session)],
     user_id: Annotated[int, Header(alias="X-User-Id")],
@@ -310,7 +311,7 @@ async def upload_my_profile_image(
     
     return create_user_public(db_user)
 
-@app.post("/api/auth/change-password", status_code=status.HTTP_204_NO_CONTENT)
+@app.post("/auth/change-password", status_code=status.HTTP_204_NO_CONTENT)
 async def change_password(
     password_data: UpdatePassword,
     session: Annotated[AsyncSession, Depends(get_session)],

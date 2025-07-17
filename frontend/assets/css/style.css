@@ -229,3 +229,23 @@ body{font-family:'Segoe UI',Arial,Helvetica,sans-serif;line-height:1.5;color:#22
 }
 
 
+/* board css */
+
+.board-wrapper{max-width:1000px;margin:60px auto;padding:0 6%}
+.board-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.board-header h2{font-size:1.6rem}
+.board-header .btn-write{padding:6px 14px;border-radius:6px;background:#0074d9;color:#fff;text-decoration:none;font-weight:600}
+.board-search{margin-bottom:20px;text-align:right}
+.board-search input{padding:6px 10px;width:240px;border:1px solid #ccc;border-radius:4px}
+table.board{width:100%;border-collapse:collapse}
+table.board th,table.board td{padding:12px;border-bottom:1px solid #e1e1e1;text-align:center;font-size:0.95rem}
+table.board th{background:#f5f5f5}
+table.board td.title{text-align:left}
+table.board tr:hover{background:#fafafa}
+@media(max-width:600px){
+  .board-header{flex-direction:column;align-items:flex-start;gap:10px}
+  .board-search{text-align:left}
+  table.board th:nth-child(3),
+  table.board td:nth-child(3){display:none}   /* 모바일에서 조회수 숨김 */
+}
+
