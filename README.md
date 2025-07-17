@@ -1,3 +1,5 @@
+{% if page.mermaid %}
+
 graph TD
    subgraph "외부"
        Client("💻 Client / Browser")
@@ -44,3 +46,5 @@ graph TD
 
    BoardService -- "캐시/큐 처리" --> Redis
    BlogService -- "캐시/큐 처리" --> Redis
+
+   {% endif %}
